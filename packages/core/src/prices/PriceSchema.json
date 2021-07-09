@@ -1,0 +1,73 @@
+{
+  "bsonType": "object",
+  "title": "PriceDocument",
+  "required": ["_id", "createDate", "pvId"],
+  "additionalProperties": false,
+  "properties": {
+    "_id": {
+      "bsonType": "objectId"
+    },
+    "createDate": {
+      "bsonType": "date"
+    },
+    "pvId": {
+      "bsonType": "objectId"
+    },
+    "data": {
+      "bsonType": "array",
+      "items": {
+        "bsonType": "object",
+        "title": "PriceDataDocument",
+        "additionalProperties": false,
+        "properties": {
+          "paintId": {
+            "bsonType": "int"
+          },
+          "pc": {
+            "bsonType": "array",
+            "items": {
+              "type": "int"
+            }
+          },
+          "ps": {
+            "bsonType": "array",
+            "items": {
+              "type": "int"
+            }
+          },
+          "xbox": {
+            "bsonType": "array",
+            "items": {
+              "type": "int"
+            }
+          },
+          "switch": {
+            "bsonType": "array",
+            "items": {
+              "type": "int"
+            }
+          },
+          "bp": {
+            "bsonType": "object",
+            "title": "BlueprintPricesDocument",
+            "additionalProperties": false,
+            "properties": {
+              "pc": {
+                "bsonType": "int"
+              },
+              "ps": {
+                "bsonType": "int"
+              },
+              "xbox": {
+                "bsonType": "int"
+              },
+              "switch": {
+                "bsonType": "int"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

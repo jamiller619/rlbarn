@@ -2,14 +2,7 @@ import mongodb from 'mongodb'
 import slugify from '../utils/slugify.js'
 import { Category, Platform, Quality, SpecialEdition } from '../enums/index.js'
 import { ProductDocument, ProductVariationDocument } from './ProductDocument.js'
-
-class Base {
-  _id = new mongodb.ObjectId()
-
-  get id() {
-    return this._id.toHexString()
-  }
-}
+import BaseModel from '../base/BaseModel.js'
 
 export interface ProductVariation {
   quality: Quality
@@ -29,7 +22,10 @@ export interface Product {
   variations: ProductVariationModel[]
 }
 
-export class ProductVariationModel extends Base implements ProductVariation {
+export class ProductVariationModel
+  extends BaseModel
+  implements ProductVariation
+{
   quality: Quality
   productId?: number
   rliId?: number
@@ -60,7 +56,7 @@ export class ProductVariationModel extends Base implements ProductVariation {
   }
 }
 
-export class ProductModel extends Base implements Product {
+export class ProductModel extends BaseModel implements Product {
   updatedAt: Date
   name: string
   otherNames?: string[]
