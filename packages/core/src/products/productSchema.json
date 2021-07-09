@@ -1,0 +1,69 @@
+{
+  "bsonType": "object",
+  "title": "ProductDocument",
+  "required": ["_id", "updatedAt", "name", "categoryId", "variations"],
+  "additionalProperties": false,
+  "properties": {
+    "_id": {
+      "bsonType": "objectId"
+    },
+    "updatedAt": {
+      "bsonType": "date"
+    },
+    "name": {
+      "bsonType": "string"
+    },
+    "otherNames": {
+      "bsonType": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "parent": {
+      "bsonType": "objectId"
+    },
+    "categoryId": {
+      "bsonType": "int",
+      "minimum": 1,
+      "maximum": 15
+    },
+    "editionId": {
+      "bsonType": "int",
+      "minimum": 1,
+      "maximum": 8
+    },
+    "platformId": {
+      "bsonType": "int",
+      "minimum": 1,
+      "maximum": 5
+    },
+    "variations": {
+      "bsonType": "array",
+      "items": {
+        "bsonType": "object",
+        "title": "ProductVariationDocument",
+        "required": ["_id", "qualityId"],
+        "additionalProperties": false,
+        "properties": {
+          "_id": {
+            "bsonType": "objectId"
+          },
+          "qualityId": {
+            "bsonType": "int",
+            "minimum": 1,
+            "maximum": 10
+          },
+          "productId": {
+            "bsonType": "int"
+          },
+          "rliId": {
+            "bsonType": "int"
+          },
+          "rlgId": {
+            "bsonType": "int"
+          }
+        }
+      }
+    }
+  }
+}
