@@ -66,7 +66,10 @@ const messages = (categoryName: string) => {
 }
 
 const getProductsByRLGId = (categoryId: number) => {
-  return productRepository.find({ categoryId }, { 'variations.rlgId': 1 })
+  return productRepository
+    .find({ categoryId })
+    .project({ 'variations.rlgId': 1 })
+    .toArray()
 }
 
 const scrapeCategory = async (categoryMap: CategoryMap): Promise<void> => {
@@ -142,15 +145,16 @@ const scrapeCategory = async (categoryMap: CategoryMap): Promise<void> => {
    */
   logger.info(message.SAVING_DATA)
 
-  const productModels = RLGProduct.toModels(products)
-  const data = JSON.stringify(productModels, null, 2)
+  const data = JSON.stringify(products, null, 2)
 
   await saveFile(data, LOG_PATH, filename('json'))
-  await productRepository.insertMany(productModels)
+  await productRepository.insertMany(
+    products.map((product) => product.toDocument())
+  )
 
-  stats.newRecords += productModels.length
+  stats.newRecords += products.length
 
-  logger.info(message.FINISH(productModels.length))
+  logger.info(message.FINISH(products.length))
 }
 
 const scrape = async (): Promise<void> => {

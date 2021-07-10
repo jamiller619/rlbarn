@@ -5,12 +5,9 @@ import {
   Platform,
   Category,
 } from '@rlbarn/core/dist/enums/index.js'
-import {
-  ProductModel,
-  ProductVariationModel,
-} from '@rlbarn/core/dist/products/index.js'
+import { Product } from '@rlbarn/core/dist/products/Product.js'
 import slugify from '@rlbarn/core/dist/utils/slugify.js'
-import { toObjectId } from '@rlbarn/core/dist/database.js'
+import { toObjectId, createObjectId } from '@rlbarn/core/dist/database.js'
 import { RLG } from '../../config.js'
 import { replaceSpacesInString } from './utils.js'
 
@@ -26,10 +23,10 @@ export type ProductParent = {
   name: string
 }
 
-const productComparer = (a: RLGProduct, b: ProductModel) => {
+const productComparer = (a: RLGProduct, b: Product) => {
   return (
-    a.category.value === b.category.value &&
-    a.edition?.value === b.edition?.value &&
+    a.category.value === b.categoryId &&
+    a.edition?.value === b.editionId &&
     a.name === b.name
   )
 }
@@ -191,43 +188,75 @@ export class RLGProduct {
     return this.data.hasteams === 'true'
   }
 
-  toModel(): ProductModel {
-    const productVariation = new ProductVariationModel()
-
-    productVariation.quality = this.quality
-    productVariation.rlgId = this.rlgId
-
-    const product = new ProductModel()
-
-    product.name = this.name
-    product.category = this.category
-    product.platform = this.platform
-    product.edition = this.edition
-
-    if (this.parentId != null) {
-      product.parentId = toObjectId(this.parentId)
+  toDocument(): Product {
+    return {
+      _id: createObjectId(),
+      updatedAt: new Date(),
+      name: this.name,
+      categoryId: this.category.value,
+      editionId: this.edition?.value,
+      platformId: this.platform?.value,
+      parent: toObjectId(this.parentId),
+      variations: [
+        {
+          _id: createObjectId(),
+          qualityId: this.quality.value,
+          rlgId: this.rlgId,
+        },
+      ],
     }
-
-    product.variations = [productVariation]
-
-    return product
   }
 
-  static toModels(products: RLGProduct[]): ProductModel[] {
-    const results: ProductModel[] = []
-
+  static toDocuments(products: RLGProduct[]): Product[] {
     return products.reduce((results, product) => {
       const matchIndex = results.findIndex((result) =>
         productComparer(product, result)
       )
-
       if (matchIndex > -1) {
-        results[matchIndex].variations.push(...product.toModel().variations)
-
+        results[matchIndex].variations.push(product.toDocument().variations)
         return results
       }
-
-      return [...results, product.toModel()]
-    }, results)
+      return [...results, product]
+    }, [])
   }
+
+  // toModel(): ProductModel {
+  //   const productVariation = new ProductVariationModel()
+
+  //   productVariation.quality = this.quality
+  //   productVariation.rlgId = this.rlgId
+
+  //   const product = new ProductModel()
+
+  //   product.name = this.name
+  //   product.category = this.category
+  //   product.platform = this.platform
+  //   product.edition = this.edition
+
+  //   if (this.parentId != null) {
+  //     product.parentId = toObjectId(this.parentId)
+  //   }
+
+  //   product.variations = [productVariation]
+
+  //   return product
+  // }
+
+  // static toModels(products: RLGProduct[]): ProductModel[] {
+  //   const results: ProductModel[] = []
+
+  //   return products.reduce((results, product) => {
+  //     const matchIndex = results.findIndex((result) =>
+  //       productComparer(product, result)
+  //     )
+
+  //     if (matchIndex > -1) {
+  //       results[matchIndex].variations.push(...product.toModel().variations)
+
+  //       return results
+  //     }
+
+  //     return [...results, product.toModel()]
+  //   }, results)
+  // }
 }

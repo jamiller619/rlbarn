@@ -16,8 +16,12 @@ class Connection {
   }
 }
 
-export const toObjectId = (str?: string): mongodb.ObjectId => {
-  return str != null ? new mongodb.ObjectId(str) : undefined
+export const toObjectId = (str: string): mongodb.ObjectId => {
+  return str != null && str !== '' ? new mongodb.ObjectId(str) : undefined
+}
+
+export const createObjectId = (): mongodb.ObjectId => {
+  return new mongodb.ObjectId()
 }
 
 export const getCollection = <T>(

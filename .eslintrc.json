@@ -16,14 +16,5 @@
     "node": true,
     "es6": true
   },
-  "rules": {
-    "no-unused-vars": [
-      "error",
-      {
-        "varsIgnorePattern": "_",
-        "argsIgnorePattern": "_",
-        "ignoreRestSiblings": true
-      }
-    ]
-  }
+  "rules": {}
 }

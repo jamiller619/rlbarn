@@ -2,25 +2,25 @@ import mongodb from 'mongodb'
 
 export type PriceRange = [number, number]
 
-export type BlueprintPricesDocument = {
+export type BlueprintPrices = {
   pc?: number
   ps?: number
   xbox?: number
   switch?: number
 }
 
-export type PriceDataDocument = {
+export type PriceData = {
   paintId: number
   pc?: PriceRange
   ps?: PriceRange
   xbox?: PriceRange
   switch?: PriceRange
-  bp?: BlueprintPricesDocument
+  bp?: BlueprintPrices
 }
 
-export type PriceDocument = {
+export type Price = {
   _id: mongodb.ObjectId
   createDate: Date
   pvId: mongodb.ObjectId
-  data: PriceDataDocument[]
+  data: PriceData[]
 }

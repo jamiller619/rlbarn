@@ -1,6 +1,6 @@
 import mongodb from 'mongodb'
 
-export type ProductVariationDocument = {
+export type ProductVariation = {
   _id: mongodb.ObjectID
   qualityId: number
   productId?: number
@@ -16,7 +16,7 @@ export type ProductVariationDocument = {
  * own = total overkill. So, manually keeping track of
  * changes between the various files.
  */
-export type ProductDocument = {
+export type Product = {
   _id: mongodb.ObjectID
   updatedAt: Date
   name: string
@@ -25,5 +25,5 @@ export type ProductDocument = {
   categoryId: number
   editionId?: number
   platformId?: number
-  variations: ProductVariationDocument[]
+  variations: ProductVariation[]
 }
