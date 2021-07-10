@@ -117,15 +117,12 @@ const saveData = async (models: RLIProduct[]): Promise<void> => {
 }
 
 const scrape = async (): Promise<void> => {
-  // const dom = await JSDOM.fromURL(RLI.URL)
-  // const models = parse(dom.window.document).filter(
-  //   (model) => model.category != null
-  // )
+  const dom = await JSDOM.fromURL(RLI.URL)
+  const models = parse(dom.window.document).filter(
+    (model) => model.category != null
+  )
 
-  // await saveData(models)
-  return new Promise((resolve) => {
-    setTimeout(resolve, 3000)
-  })
+  await saveData(models)
 }
 
 const renderStats = () => {
