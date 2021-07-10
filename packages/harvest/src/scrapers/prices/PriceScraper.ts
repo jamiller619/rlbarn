@@ -1,6 +1,5 @@
 import { JSDOM } from 'jsdom'
 import { createLogger } from '@rlbarn/core/dist/logger.js'
-import connect from '@rlbarn/core/dist/database.js'
 import {
   Product,
   ProductVariation,
@@ -10,6 +9,7 @@ import priceRepository from '@rlbarn/core/dist/prices/PriceRepository.js'
 import { RLI, LOG_PATH } from '../../config.js'
 import { timestamp } from '../../utils.js'
 import { RLIProduct } from './RLIProduct.js'
+import Scraper from '../Scraper.js'
 
 const logger = createLogger({
   filename: `${LOG_PATH}/rlgarage-${timestamp}.log`,
@@ -31,34 +31,11 @@ type Stats = {
   itemsWithMatch: number
 }
 
-const saveData = async (models: RLIProduct[]): Promise<void> => {
-  const stats: Stats = {
-    parsed: models.reduce((total, model) => {
-      return total + model.data.length
-    }, 0),
-    saved: 0,
-    itemsWithMatch: 0,
-    itemsWithoutMatch: 0,
-  }
-
-  for await (const model of models) {
-    const { rliId, nameWithEdition } = model
-    const match = await findMatchAndUpdate(model)
-
-    if (match == null) {
-      stats.itemsWithoutMatch += 1
-
-      logger.error(
-        `Unable to find a match for RLI Id ${rliId}: "${nameWithEdition}"`
-      )
-
-      continue
-    }
-
-    stats.itemsWithMatch += 1
-
-    await priceRepository.insertOne(model.toDocument())
-  }
+const stats: Stats = {
+  parsed: 0,
+  saved: 0,
+  itemsWithMatch: 0,
+  itemsWithoutMatch: 0,
 }
 
 const updateMatch = async (
@@ -114,25 +91,52 @@ const findMatchAndUpdate = async (
   return variation
 }
 
-const scrape = async () => {
-  const connection = await connect()
+const saveData = async (models: RLIProduct[]): Promise<void> => {
+  stats.parsed = models.reduce((total, model) => {
+    return total + model.data.length
+  }, 0)
 
-  try {
-    logger.info('Starting scrape prices')
+  for await (const model of models) {
+    const { rliId, nameWithEdition } = model
+    const match = await findMatchAndUpdate(model)
 
-    const dom = await JSDOM.fromURL(RLI.URL)
-    const models = parse(dom.window.document).filter(
-      (model) => model.category != null
-    )
+    if (match == null) {
+      stats.itemsWithoutMatch += 1
 
-    await saveData(models)
-  } catch (e) {
-    logger.error(`Error in scrape prices: "${e?.message}"`)
-  } finally {
-    logger.info('Scraping prices complete!')
+      logger.error(
+        `Unable to find a match for RLI Id ${rliId}: "${nameWithEdition}"`
+      )
 
-    connection.close()
+      continue
+    }
+
+    stats.itemsWithMatch += 1
+
+    await priceRepository.insertOne(model.toDocument())
   }
 }
 
-scrape()
+const scrape = async (): Promise<void> => {
+  // const dom = await JSDOM.fromURL(RLI.URL)
+  // const models = parse(dom.window.document).filter(
+  //   (model) => model.category != null
+  // )
+
+  // await saveData(models)
+  return new Promise((resolve) => {
+    setTimeout(resolve, 3000)
+  })
+}
+
+const renderStats = () => {
+  return `
+  ${stats.parsed} prices parsed
+  ${stats.saved} records saved
+  ${stats.itemsWithMatch} items WITH a match
+  ${stats.itemsWithoutMatch} items WITHOUT a match
+  `
+}
+
+const scraper = new Scraper('prices', logger, scrape, renderStats)
+
+export default scraper.init.bind(scraper)

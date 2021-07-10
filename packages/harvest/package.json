@@ -2,7 +2,7 @@
   "name": "@rlbarn/harvest",
   "version": "1.0.0",
   "private": true,
-  "main": "bin/index.js",
+  "main": "bin/harvest.js",
   "author": "Jeff Miller",
   "license": "MIT",
   "type": "module",
@@ -15,11 +15,12 @@
     "clean-env": "yarn clean-logs & yarn clean-images",
     "compile": "npx tsc -b",
     "env": "node -r dotenv/config",
-    "scrape-products": "yarn env bin/scrapers/product/index.js"
+    "scrape-prices": "yarn env bin/harvest --prices"
   },
   "dependencies": {
     "@rlbarn/core": "1.0.0",
     "axios": "^0.21.1",
+    "commander": "^8.0.0",
     "dotenv": "^10.0.0",
     "jsdom": "^16.6.0",
     "winston": "^3.3.3"

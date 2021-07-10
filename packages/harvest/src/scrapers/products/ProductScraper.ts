@@ -1,7 +1,6 @@
 import path from 'path'
 import { JSDOM } from 'jsdom'
 import { createLogger } from '@rlbarn/core/dist/logger.js'
-import connect from '@rlbarn/core/dist/database.js'
 import productRepository from '@rlbarn/core/dist/products/ProductRepository.js'
 import { parse } from './parse.js'
 import { RLGProduct } from './RLGProduct.js'
@@ -13,6 +12,7 @@ import {
   ErrorStatus,
   timestamp,
 } from '../../utils.js'
+import Scraper from '../Scraper.js'
 
 const logger = createLogger({
   filename: `${LOG_PATH}/rlgarage-${timestamp}.log`,
@@ -158,24 +158,19 @@ const scrapeCategory = async (categoryMap: CategoryMap): Promise<void> => {
 }
 
 const scrape = async (): Promise<void> => {
-  const connection = await connect()
-
-  try {
-    for await (const categoryMap of categoryUrlMap) {
-      await scrapeCategory(categoryMap)
-    }
-  } catch (e) {
-    logger.error(`Error in scrapeProducts: ${e?.message}: ${e?.stack}`)
-  } finally {
-    logger.info(`
-      Scraping items complete! Stats:
-      ${stats.productsParsed} products parsed
-      ${stats.imagesSaved} images saved
-      ${stats.newRecords} records added
-    `)
-
-    connection.close()
+  for await (const categoryMap of categoryUrlMap) {
+    await scrapeCategory(categoryMap)
   }
 }
 
-scrape()
+const renderStats = () => {
+  return `
+    ${stats.productsParsed} products parsed
+    ${stats.imagesSaved} images saved
+    ${stats.newRecords} records added
+  `
+}
+
+const scraper = new Scraper('products', logger, scrape, renderStats)
+
+export default scraper.init.bind(scraper)

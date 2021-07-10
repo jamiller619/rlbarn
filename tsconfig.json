@@ -13,14 +13,15 @@
     // "emitDecoratorMetadata": true,
     // "allowSyntheticDefaultImports": true,
     // "moduleResolution": "node",
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "preserveSymlinks": true
     // "paths": {
     //   "@rlbarn/*": ["packages/*/dist"]
     // },
     // "types": []
   },
 
-  "exclude": ["dist", "node_modules"]
+  "exclude": ["dist", "bin", "node_modules"]
 
   // "references": [
   // {

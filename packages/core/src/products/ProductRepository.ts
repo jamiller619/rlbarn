@@ -1,9 +1,9 @@
-import mongodb, { Collection } from 'mongodb'
+import mongodb from 'mongodb'
 import { Product } from './Product.js'
-import { getCollection } from '../database.js'
 import slugify from '../utils/slugify.js'
+import createRepo, { Repository } from '../Repository.js'
 
-type ProductRepository = Collection<Product> & {
+type ProductRepository = Repository<Product> & {
   findMatch(
     name: string,
     categoryId: number,
@@ -11,9 +11,7 @@ type ProductRepository = Collection<Product> & {
   ): Promise<Product>
 }
 
-const productRepository = getCollection<Product>(
-  'products'
-) as ProductRepository
+const productRepository = createRepo('products') as ProductRepository
 
 productRepository.findMatch = async (
   name: string,

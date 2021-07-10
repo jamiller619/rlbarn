@@ -8,7 +8,7 @@ const client = new MongoClient(uri, {
   useUnifiedTopology: true,
 })
 
-class Connection {
+export class Connection {
   close: () => Promise<void>
 
   constructor(client: mongodb.MongoClient) {
