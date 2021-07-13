@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.json",
+
+  "compilerOptions": {
+    "composite": true,
+    "module": "ESNext",
+    "jsx": "react",
+    "rootDir": "src",
+    "incremental": true,
+    "lib": ["dom", "es2015"],
+    "types": ["node", "jest", "@testing-library/jest-dom"]
+  },
+  "include": ["src/**/*"]
+}
