@@ -1,21 +1,16 @@
-import path from 'path'
 import { JSDOM } from 'jsdom'
+import path from 'path'
+import db from '@rlbarn/core/dist/database.js'
 import { createLogger } from '@rlbarn/core/dist/logger.js'
-import productRepository from '@rlbarn/core/dist/products/ProductRepository.js'
 import { parse } from './parse.js'
 import { RLGProduct } from './RLGProduct.js'
 import { LOG_PATH, IMAGE_SAVE_PATH } from '../../config.js'
 import { categoryUrlMap, CategoryMap } from './categoryUrlMap.js'
-import {
-  saveImageFromUrl,
-  saveFile,
-  ErrorStatus,
-  timestamp,
-} from '../../utils.js'
+import { saveImageFromUrl, saveFile, ErrorStatus } from '../../utils.js'
 import Scraper from '../Scraper.js'
 
 const logger = createLogger({
-  filename: `${LOG_PATH}/rlgarage-${timestamp}.log`,
+  filename: `${LOG_PATH}/rlgarage.log`,
   label: 'RLG',
 })
 
@@ -66,7 +61,7 @@ const messages = (categoryName: string) => {
 }
 
 const getProductsByRLGId = (categoryId: number) => {
-  return productRepository
+  return db.productRepository.collection
     .find({ categoryId })
     .project({ 'variations.rlgId': 1 })
     .toArray()
@@ -145,10 +140,8 @@ const scrapeCategory = async (categoryMap: CategoryMap): Promise<void> => {
    */
   logger.info(message.SAVING_DATA)
 
-  const data = JSON.stringify(products, null, 2)
-
-  await saveFile(data, LOG_PATH, filename('json'))
-  await productRepository.insertMany(
+  await saveFile(products, LOG_PATH, filename('json'))
+  await db.productRepository.collection.insertMany(
     products.map((product) => product.toDocument())
   )
 

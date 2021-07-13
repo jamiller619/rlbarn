@@ -1,14 +1,9 @@
-import { Collection } from 'mongodb'
-import { getCollection } from './database.js'
+import { MongoClient, Collection } from 'mongodb'
 
-export type Repository<T> = Collection<T> & {
+export default class Repository<T> {
   collection: Collection<T>
-}
 
-export default <T>(collectionName: string): Repository<T> => {
-  return {
-    get collection(): Collection<T> {
-      return getCollection<T>(collectionName)
-    },
-  } as Repository<T>
+  constructor(client: MongoClient, collectionName: string) {
+    this.collection = client.db('rlbarnDB').collection(collectionName)
+  }
 }

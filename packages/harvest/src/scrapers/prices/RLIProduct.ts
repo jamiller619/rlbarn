@@ -5,6 +5,7 @@ import {
   SpecialEdition,
 } from '@rlbarn/core/dist/enums/index.js'
 import { PriceData, Price } from '@rlbarn/core/dist/prices/Price.js'
+import { ProductVariation } from '@rlbarn/core/dist/products/Product.js'
 import { toObjectId, createObjectId } from '@rlbarn/core/dist/database.js'
 import {
   categoryMap,
@@ -15,7 +16,6 @@ import {
 
 export class RLIProduct {
   el: HTMLElement
-  rliId: number
   name: string
   otherNames?: string[]
   editionName?: string
@@ -27,12 +27,20 @@ export class RLIProduct {
       _id: createObjectId(),
       createDate: new Date(),
       pvId: toObjectId(this.pvId),
-      data: this.data.map((data) => {
+      data: this.prices.map((data) => {
         return {
           paintId: data.paint.value,
           ...data.prices,
         }
       }),
+    }
+  }
+
+  toDocumentVariation(): ProductVariation {
+    return {
+      _id: createObjectId(),
+      qualityId: this.quality.value,
+      rliId: this.rliId,
     }
   }
 
@@ -42,9 +50,21 @@ export class RLIProduct {
     const itemName = el.dataset['itemname']
     const itemFullName = el.dataset['itemfullname']
 
-    Object.assign(this, parseNames(itemName, itemFullName))
+    const { name, editionName, parentName } = parseNames(itemFullName)
+
+    const otherNamesFilter = [name, parentName]
+    const otherNames = parseOtherNames(itemName, otherNamesFilter)
+
+    this.name = name
+    this.editionName = editionName
+    this.parentName = parentName
+    this.otherNames = otherNames
 
     return this
+  }
+
+  get rliId(): number {
+    return this.prices[0].rliId
   }
 
   get category(): Category {
@@ -60,7 +80,8 @@ export class RLIProduct {
   get edition(): SpecialEdition {
     if (
       this.category.value === Category.WHEEL.value &&
-      this.editionName?.trim() !== ''
+      this.editionName != null &&
+      this.editionName.toUpperCase
     ) {
       const edition = Object.keys(SpecialEdition).find(
         (name) => name === this.editionName.toUpperCase()
@@ -78,7 +99,7 @@ export class RLIProduct {
       : this.name
   }
 
-  get data(): DataInfo[] {
+  get prices(): DataInfo[] {
     const paintNodes = Array.from(
       this.el.querySelectorAll('.priceRange:not(.invisibleColumn)')
     ) as HTMLElement[]
@@ -101,6 +122,7 @@ const parseInfo = (dataInfo: string): DataInfo => {
 
   if (data != null) {
     const { pc, ps4: ps, xbox } = data.k
+    const bp = data.b
 
     return {
       rliId: data.i,
@@ -111,7 +133,12 @@ const parseInfo = (dataInfo: string): DataInfo => {
         ps,
         xbox,
         switch: data.k.switch,
-        bp: data.bp,
+        bp: {
+          pc: bp?.pc,
+          ps: bp?.ps4,
+          xbox: bp?.xbox,
+          switch: bp?.switch,
+        },
       },
     }
   }
@@ -119,10 +146,19 @@ const parseInfo = (dataInfo: string): DataInfo => {
 
 type Names = {
   name: string
-  otherNames: string[]
   editionName?: string
   parentName?: string
 }
+
+const lowerCaseEditionNames = SpecialEdition.keys().map((key) =>
+  key.toLowerCase()
+)
+const otherNamesExcludeWordFilter = [
+  'special',
+  'edition',
+  'se',
+  ...lowerCaseEditionNames,
+]
 
 /**
  * RLI has two data attributes for item names:
@@ -152,38 +188,65 @@ type Names = {
  *  var b = a.map((e) => e.dataset)
  *  var c = b.map(({ itemfullname, itemname }) => ({ itemfullname, itemname }))
  */
-const parseNames = (itemName = '', itemFullName = ''): Names => {
-  const otherNames = itemName.split(' ').filter((name) => name != null)
+const splitOtherNames = (otherNamesString: string) => {
+  const brackets = otherNamesString.match('\\[.*]')
 
-  const hasEdition = itemFullName.includes(':')
-  const hasParent = itemFullName.includes('[')
+  if (brackets != null) {
+    const names = otherNamesString.replace(brackets[0], '').split(' ')
+
+    names.push(brackets[0].replace('[', '').replace(']', ''))
+
+    return names
+  }
+
+  return otherNamesString.split(' ')
+}
+
+const parseOtherNames = (otherNamesString: string, namesToFilter: string[]) => {
+  const otherNames = splitOtherNames(otherNamesString).filter(
+    (n) => n != null && n !== ''
+  )
+  const lowerCaseNames = namesToFilter
+    .filter((n) => n != null)
+    .map((name) => name.toLowerCase())
+  const otherNamesFilter = (otherName: string) => {
+    return (
+      otherName != null &&
+      !lowerCaseNames.includes(otherName) &&
+      !otherNamesExcludeWordFilter.includes(otherName)
+    )
+  }
+
+  return [...new Set(otherNames)].filter(otherNamesFilter)
+}
+
+const parseNames = (productName: string): Names => {
+  const hasEdition = productName.includes(':')
+  const hasParent = productName.includes('[')
 
   if (hasEdition) {
-    const [actualName, editionName] = itemFullName
+    const [actualName, editionName] = productName
       .split(':')
       .map((p) => p.trim())
 
     return {
       name: actualName,
-      otherNames,
       editionName,
     }
   }
 
   if (hasParent) {
-    const [actualName, parentName] = itemFullName
+    const [actualName, parentName] = productName
       .split('[')
       .map((p) => p.replace(']', '').trim())
 
     return {
       name: actualName,
-      otherNames,
       parentName,
     }
   }
 
   return {
-    name: itemFullName,
-    otherNames,
+    name: productName,
   }
 }

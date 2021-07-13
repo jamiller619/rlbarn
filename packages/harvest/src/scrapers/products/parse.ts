@@ -1,5 +1,5 @@
 import { Category } from '@rlbarn/core/dist/enums/index.js'
-import productRepository from '@rlbarn/core/dist/products/ProductRepository.js'
+import db from '@rlbarn/core/dist/database.js'
 import { RLGProduct } from './RLGProduct.js'
 
 type ItemsGroup = {
@@ -43,7 +43,7 @@ const evaluateDecalsPage = async (
     }
 
     if (parentName != null && parentName !== '') {
-      const parent = await productRepository.findOne({
+      const parent = await db.productRepository.collection.findOne({
         categoryId: Category.BODY.value,
         $text: {
           $search: parentName,

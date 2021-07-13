@@ -15,7 +15,7 @@
     "clean-env": "yarn clean-logs & yarn clean-images",
     "compile": "npx tsc -b",
     "env": "node -r dotenv/config",
-    "scrape-prices": "yarn env bin/harvest --prices"
+    "scrape-prices": "NODE_ENV=development yarn env bin/harvest --prices"
   },
   "dependencies": {
     "@rlbarn/core": "1.0.0",
@@ -23,11 +23,12 @@
     "commander": "^8.0.0",
     "dotenv": "^10.0.0",
     "jsdom": "^16.6.0",
+    "ora": "^5.4.1",
     "winston": "^3.3.3"
   },
   "devDependencies": {
     "@types/jsdom": "^16.2.12",
-    "rimraf": "^3.0.2",
-    "typescript": "^4.3.4"
+    "@types/prompts": "^2.0.14",
+    "rimraf": "^3.0.2"
   }
 }

@@ -1,4 +1,6 @@
-import mongodb from 'mongodb'
+import mongodb, { Collection } from 'mongodb'
+
+export type PriceCollection = Collection<Price>
 
 export type PriceRange = [number, number]
 

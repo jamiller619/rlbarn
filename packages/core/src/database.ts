@@ -1,39 +1,63 @@
-import mongodb from 'mongodb'
+import mongodb, { MongoClient, ObjectID } from 'mongodb'
+import ProductRepository from './products/ProductRepository.js'
+import PriceRepository from './prices/PriceRepository.js'
 
-const { MongoClient } = mongodb
 const uri = process.env.DB_URI
 
-const client = new MongoClient(uri, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
+export const toObjectId = (str: string): ObjectID => {
+  return str != null && str !== '' ? new mongodb.ObjectID(str) : undefined
+}
 
-export class Connection {
-  close: () => Promise<void>
+export const createObjectId = (): ObjectID => {
+  return new mongodb.ObjectID()
+}
 
-  constructor(client: mongodb.MongoClient) {
-    this.close = () => client.close()
+class Database {
+  client: MongoClient
+  #priceRepository: PriceRepository
+  #productRepository: ProductRepository
+
+  constructor() {
+    this.client = new mongodb.MongoClient(uri, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    })
+  }
+
+  get priceRepository(): PriceRepository {
+    if (this.#priceRepository != null) {
+      return this.#priceRepository
+    }
+
+    if (!this.client.isConnected()) {
+      return
+    }
+
+    return (this.#priceRepository = new PriceRepository(this.client, 'prices'))
+  }
+
+  get productRepository(): ProductRepository {
+    if (this.#productRepository != null) {
+      return this.#productRepository
+    }
+
+    if (!this.client.isConnected()) {
+      return
+    }
+
+    return (this.#productRepository = new ProductRepository(
+      this.client,
+      'products'
+    ))
   }
 }
 
-export const toObjectId = (str: string): mongodb.ObjectId => {
-  return str != null && str !== '' ? new mongodb.ObjectId(str) : undefined
-}
+export default new Database()
 
-export const createObjectId = (): mongodb.ObjectId => {
-  return new mongodb.ObjectId()
-}
+// export default async function connect(): Promise<Database> {
+//   if (!db.client.isConnected()) {
+//     await db.client.connect()
+//   }
 
-export const getCollection = <T>(
-  collectionName: string
-): mongodb.Collection<T> => {
-  return client.db('rlbarnDB').collection(collectionName)
-}
-
-export default async function connect(): Promise<Connection> {
-  if (!client.isConnected()) {
-    await client.connect()
-  }
-
-  return new Connection(client)
-}
+//   return db
+// }

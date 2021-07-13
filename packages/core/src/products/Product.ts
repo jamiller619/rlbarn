@@ -1,7 +1,9 @@
-import mongodb from 'mongodb'
+import { ObjectID, Collection } from 'mongodb'
+
+export type ProductCollection = Collection<Product>
 
 export type ProductVariation = {
-  _id: mongodb.ObjectID
+  _id: ObjectID
   qualityId: number
   productId?: number
   rliId?: number
@@ -17,11 +19,11 @@ export type ProductVariation = {
  * changes between the various files.
  */
 export type Product = {
-  _id: mongodb.ObjectID
+  _id: ObjectID
   updatedAt: Date
   name: string
   otherNames?: string[]
-  parent?: mongodb.ObjectId
+  parent?: ObjectID
   categoryId: number
   editionId?: number
   platformId?: number

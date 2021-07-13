@@ -3,13 +3,6 @@ import util from 'util'
 import path from 'path'
 import axios from 'axios'
 
-export const timestamp = (() => {
-  const date = Date.now()
-  const [m, y, d] = new Date(date).toLocaleDateString('en-US').split('/')
-
-  return [m.padStart(2, '0'), d.padStart(2, '0'), y, date].join('-')
-})()
-
 const mkdir = util.promisify(fs.mkdir)
 const writeFile = util.promisify(fs.writeFile)
 
@@ -24,14 +17,16 @@ const doesFileExist = (file: string): Promise<boolean> => {
 }
 
 export const saveFile = async (
-  data: string,
+  data: unknown,
   dir: string,
   filename: string
 ): Promise<void> => {
   try {
+    const json = JSON.stringify(data, null, 2)
+
     await mkdir(dir, { recursive: true })
 
-    await writeFile(`${dir}/${filename}`, data)
+    await writeFile(`${dir}/${filename}`, json)
   } catch (e) {
     throw new Error(`Error in "saveFile": Unable to save file: "${filename}"`)
   }
